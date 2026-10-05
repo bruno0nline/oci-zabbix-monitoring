@@ -1,0 +1,87 @@
+title: "Homologação Zabbix x OCI"
+description: "Ambiente Always Free e acesso read-only para validar o template Zabbix 'Oracle Cloud by HTTP'."
+schemaVersion: 1.1.0
+version: "1.0.0"
+locale: "en"
+
+variableGroups:
+  - title: "Ocultas"
+    visible: false
+    variables:
+      - tenancy_ocid
+      - region
+      - oci_profile
+      - zabbix_public_key_path
+      - freeform_tags
+
+  - title: "Usuário de serviço Zabbix"
+    variables:
+      - zabbix_user_ocid
+      - zabbix_public_key
+
+  - title: "Compute"
+    variables:
+      - instance_shape
+      - instance_ocpus
+      - instance_memory_gbs
+
+  - title: "Opções"
+    variables:
+      - compartment_name
+      - vcn_cidr
+      - subnet_cidr
+      - enable_adb
+
+variables:
+  zabbix_user_ocid:
+    type: string
+    title: "OCID do usuário svc-zabbix"
+    required: true
+
+  zabbix_public_key:
+    type: text
+    multiline: true
+    title: "Chave PÚBLICA (PEM) do svc-zabbix"
+    description: "Cole apenas a chave pública. Nunca a privada."
+    required: false
+
+  instance_shape:
+    type: enum
+    title: "Shape da VM (Always Free)"
+    enum:
+      - "VM.Standard.E2.1.Micro"
+      - "VM.Standard.A1.Flex"
+    default: "VM.Standard.E2.1.Micro"
+    required: true
+
+  instance_ocpus:
+    type: number
+    title: "OCPUs (somente Flex)"
+    visible:
+      eq:
+        - instance_shape
+        - "VM.Standard.A1.Flex"
+
+  instance_memory_gbs:
+    type: number
+    title: "Memória GB (somente Flex)"
+    visible:
+      eq:
+        - instance_shape
+        - "VM.Standard.A1.Flex"
+
+  compartment_name:
+    type: string
+    title: "Nome do compartment de homologação"
+
+  vcn_cidr:
+    type: string
+    title: "CIDR da VCN"
+
+  subnet_cidr:
+    type: string
+    title: "CIDR da subnet privada"
+
+  enable_adb:
+    type: boolean
+    title: "Criar Autonomous DB Always Free"

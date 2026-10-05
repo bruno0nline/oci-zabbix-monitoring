@@ -1,0 +1,34 @@
+#cloud-config
+# Carga controlada para validar metricas no Zabbix:
+# a cada hora -> 10 min de CPU/memoria + 5 min de I/O no block volume.
+write_files:
+  - path: /usr/local/bin/zbx-load.sh
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      stress-ng --cpu 0 --cpu-load 80 --vm 1 --vm-bytes 50% --timeout 600s
+      if [ -b /dev/oracleoci/oraclevdb ]; then
+        fio --name=zbx --filename=/dev/oracleoci/oraclevdb --rw=randrw --bs=4k \
+            --iodepth=16 --ioengine=libaio --direct=1 --runtime=300 --time_based
+      fi
+  - path: /etc/systemd/system/zbx-load.service
+    content: |
+      [Unit]
+      Description=Carga de teste - homologacao Zabbix x OCI
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/zbx-load.sh
+  - path: /etc/systemd/system/zbx-load.timer
+    content: |
+      [Unit]
+      Description=Executa a carga de teste a cada hora
+      [Timer]
+      OnCalendar=hourly
+      [Install]
+      WantedBy=timers.target
+
+runcmd:
+  - dnf install -y oracle-epel-release-el9 || true
+  - dnf install -y stress-ng fio
+  - systemctl daemon-reload
+  - systemctl enable --now zbx-load.timer

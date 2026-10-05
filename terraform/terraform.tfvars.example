@@ -1,0 +1,11 @@
+# Copie para terraform.tfvars (NAO versionado). Use apenas para execucao local / Cloud Shell.
+# No Resource Manager esses valores sao preenchidos no formulario do stack.
+tenancy_ocid     = "ocid1.tenancy.oc1..<SEU_TENANCY_OCID>"
+region           = "sa-vinhedo-1" # use a HOME REGION da tenancy (Always Free)
+zabbix_user_ocid = "ocid1.user.oc1..<OCID_DO_SVC_ZABBIX>"
+
+# Chave PUBLICA do usuario de servico (uma das duas opcoes):
+# zabbix_public_key_path = "~/zabbix_oci_public.pem"
+
+# Se E2.1.Micro der "Out of host capacity":
+# instance_shape = "VM.Standard.A1.Flex"
