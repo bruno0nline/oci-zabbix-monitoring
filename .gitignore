@@ -6,3 +6,6 @@ terraform.tfvars
 crash.log
 tfplan
 *.zip
+
+# logs de jobs (contem OCIDs reais)
+*.log
