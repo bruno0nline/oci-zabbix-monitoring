@@ -1,12 +1,21 @@
 locals {
   tags = var.freeform_tags
 
-  # Recursos lidos pelo template "Oracle Cloud by HTTP" (doc oficial Zabbix)
   zabbix_public_key = (
     var.zabbix_public_key != "" ? var.zabbix_public_key :
     var.zabbix_public_key_path != "" ? file(pathexpand(var.zabbix_public_key_path)) : ""
   )
 
+  # Normaliza o PEM: formularios web as vezes trocam quebras de linha por espacos
+  zabbix_pub_body = replace(replace(replace(local.zabbix_public_key,
+    "-----BEGIN PUBLIC KEY-----", ""), "-----END PUBLIC KEY-----", ""), "/\\s+/", "")
+  zabbix_pub_pem = local.zabbix_pub_body == "" ? "" : join("\n", concat(
+    ["-----BEGIN PUBLIC KEY-----"],
+    [for i in range(0, length(local.zabbix_pub_body), 64) : substr(local.zabbix_pub_body, i, 64)],
+    ["-----END PUBLIC KEY-----"]
+  ))
+
+  # Recursos lidos pelo template "Oracle Cloud by HTTP" (doc oficial Zabbix)
   zabbix_read_resources = [
     "metrics",
     "instances",
@@ -72,5 +81,5 @@ resource "oci_identity_policy" "objectstorage_service" {
 resource "oci_identity_api_key" "zabbix" {
   count     = local.zabbix_public_key == "" ? 0 : 1
   user_id   = var.zabbix_user_ocid
-  key_value = trimspace(local.zabbix_public_key)
+  key_value = local.zabbix_pub_pem
 }
